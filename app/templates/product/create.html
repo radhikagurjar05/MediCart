@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+
+{% block title %}Sell an Item — MediCart{% endblock %}
+{% block meta_description %}List an item for sale or exchange on MediCart.{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: calc(var(--navbar-height) + var(--space-8)); padding-bottom: var(--space-12);">
+    <div class="page-header" style="margin-bottom: var(--space-8);">
+        <h1 style="font-size: var(--text-3xl); font-weight: var(--weight-bold); margin-bottom: var(--space-2);">Post a New Listing</h1>
+        <p style="color: var(--text-secondary);">Fill out the details below to sell or exchange your item on campus.</p>
+    </div>
+
+    <div class="card animate-fade-in" style="max-width: 800px; margin: 0 auto; box-shadow: var(--shadow-lg); border: 1px solid var(--border);">
+        <div class="card-body" style="padding: var(--space-8);">
+            <form method="POST" action="{{ url_for('product.create') }}" enctype="multipart/form-data">
+                
+                <!-- Basic Details -->
+                <h3 style="font-size: var(--text-xl); font-weight: var(--weight-semibold); margin-bottom: var(--space-4); border-bottom: 1px solid var(--border); padding-bottom: var(--space-2);">Basic Details</h3>
+                
+                <div class="form-group" style="margin-bottom: var(--space-5);">
+                    <label for="title" class="form-label">Listing Title <span style="color: var(--danger);">*</span></label>
+                    <input type="text" id="title" name="title" class="form-input" placeholder="e.g., iPhone 13 Pro (128GB)" required maxlength="100">
+                </div>
+
+                <div class="grid" style="grid-template-columns: 1fr 1fr; gap: var(--space-5); margin-bottom: var(--space-5);">
+                    <div class="form-group">
+                        <label for="category_id" class="form-label">Category <span style="color: var(--danger);">*</span></label>
+                        <select id="category_id" name="category_id" class="form-input" required style="cursor: pointer;">
+                            <option value="" disabled selected>Select a category</option>
+                            {% for cat in categories %}
+                            <option value="{{ cat.id }}">{{ cat.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="condition" class="form-label">Condition <span style="color: var(--danger);">*</span></label>
+                        <select id="condition" name="condition" class="form-input" required style="cursor: pointer;">
+                            <option value="" disabled selected>Select condition</option>
+                            <option value="new">Brand New (Sealed)</option>
+                            <option value="like_new">Like New</option>
+                            <option value="good">Good</option>
+                            <option value="fair">Fair</option>
+                            <option value="poor">Poor</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-bottom: var(--space-8);">
+                    <label for="description" class="form-label">Description <span style="color: var(--danger);">*</span></label>
+                    <textarea id="description" name="description" class="form-input" rows="5" placeholder="Describe the item, its features, and any flaws..." required></textarea>
+                </div>
+
+
+                <!-- Pricing & Exchange -->
+                <h3 style="font-size: var(--text-xl); font-weight: var(--weight-semibold); margin-bottom: var(--space-4); border-bottom: 1px solid var(--border); padding-bottom: var(--space-2);">Pricing & Exchange</h3>
+
+                <div class="grid" style="grid-template-columns: 1fr 1fr; gap: var(--space-5); margin-bottom: var(--space-5);">
+                    <div class="form-group">
+                        <label for="price" class="form-label">Price (₹)</label>
+                        <input type="number" id="price" name="price" class="form-input" placeholder="e.g., 500" min="0" step="0.01">
+                        <p style="font-size: var(--text-xs); color: var(--text-muted); margin-top: var(--space-1);">Leave blank if for exchange only.</p>
+                    </div>
+
+                    <div class="form-group" style="display: flex; flex-direction: column; justify-content: center;">
+                        <label style="display: flex; align-items: center; gap: var(--space-2); cursor: pointer;">
+                            <input type="checkbox" id="is_exchangeable" name="is_exchangeable" style="width: 18px; height: 18px; accent-color: var(--primary);">
+                            <span style="font-weight: var(--weight-medium);">Open to Exchange?</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-group" id="exchange_preferences_group" style="margin-bottom: var(--space-8); display: none;">
+                    <label for="exchange_preferences" class="form-label">What are you looking to exchange for?</label>
+                    <input type="text" id="exchange_preferences" name="exchange_preferences" class="form-input" placeholder="e.g., specific textbook, mouse, etc.">
+                </div>
+
+
+                <!-- Images -->
+                <h3 style="font-size: var(--text-xl); font-weight: var(--weight-semibold); margin-bottom: var(--space-4); border-bottom: 1px solid var(--border); padding-bottom: var(--space-2);">Images</h3>
+
+                <div class="form-group" style="margin-bottom: var(--space-8);">
+                    <label for="images" class="form-label">Upload Images (Max 5)</label>
+                    <div style="border: 2px dashed var(--border); border-radius: var(--radius-lg); padding: var(--space-8); text-align: center; background: var(--bg-body); cursor: pointer;" onclick="document.getElementById('images').click()">
+                        <i data-lucide="image-plus" style="width: 32px; height: 32px; color: var(--text-muted); margin-bottom: var(--space-3);"></i>
+                        <p style="font-weight: var(--weight-medium);">Click to upload images</p>
+                        <p style="font-size: var(--text-xs); color: var(--text-muted); margin-top: var(--space-1);">PNG, JPG, WEBP (up to 5MB each)</p>
+                    </div>
+                    <input type="file" id="images" name="images" accept=".png, .jpg, .jpeg, .webp" multiple style="display: none;">
+                    
+                    <!-- Preview Container -->
+                    <div id="image_preview" style="display: flex; flex-wrap: wrap; gap: var(--space-3); margin-top: var(--space-4);"></div>
+                </div>
+
+
+                <div style="display: flex; gap: var(--space-4); justify-content: flex-end;">
+                    <a href="{{ url_for('main.index') }}" class="btn btn-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-primary">
+                        <i data-lucide="check" style="width:18px;height:18px"></i>
+                        Post Listing
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Toggle Exchange Preferences
+    const isExchangeable = document.getElementById('is_exchangeable');
+    const exchangePrefsGroup = document.getElementById('exchange_preferences_group');
+
+    isExchangeable.addEventListener('change', function() {
+        if (this.checked) {
+            exchangePrefsGroup.style.display = 'block';
+        } else {
+            exchangePrefsGroup.style.display = 'none';
+        }
+    });
+
+    // Image Preview
+    const imageInput = document.getElementById('images');
+    const imagePreview = document.getElementById('image_preview');
+
+    imageInput.addEventListener('change', function() {
+        imagePreview.innerHTML = '';
+        
+        if (this.files.length > 5) {
+            alert('You can only upload a maximum of 5 images.');
+            this.value = '';
+            return;
+        }
+
+        Array.from(this.files).forEach(file => {
+            if (file.size > 5 * 1024 * 1024) {
+                alert(`File ${file.name} exceeds 5MB limit.`);
+                this.value = '';
+                imagePreview.innerHTML = '';
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const imgContainer = document.createElement('div');
+                imgContainer.style.cssText = `
+                    width: 80px; 
+                    height: 80px; 
+                    border-radius: var(--radius-md); 
+                    overflow: hidden; 
+                    border: 1px solid var(--border);
+                    box-shadow: var(--shadow-sm);
+                `;
+                
+                const img = document.createElement('img');
+                img.src = e.target.result;
+                img.style.cssText = 'width: 100%; height: 100%; object-fit: cover;';
+                
+                imgContainer.appendChild(img);
+                imagePreview.appendChild(imgContainer);
+            }
+            reader.readAsDataURL(file);
+        });
+    });
+</script>
+{% endblock %}

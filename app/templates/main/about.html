@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}About — MediCart{% endblock %}
+{% block meta_description %}Learn about MediCart — a campus-restricted marketplace built for Medi-Caps University students to buy, sell, and exchange products safely.{% endblock %}
+
+{% block content %}
+<section class="section" style="padding-top: calc(var(--navbar-height) + var(--space-12));">
+    <div class="container" style="max-width: 800px;">
+        <h1 class="section-title animate-fade-in">About MediCart</h1>
+        <p class="section-subtitle animate-fade-in">
+            The story behind your campus marketplace.
+        </p>
+
+        <div class="card animate-fade-in animate-fade-in-delay-1" style="margin-bottom: var(--space-8);">
+            <div class="card-body" style="padding: var(--space-8);">
+                <h2 style="font-size: var(--text-xl); margin-bottom: var(--space-4); color: var(--primary);">
+                    <i data-lucide="target" style="width:20px;height:20px;vertical-align:middle;margin-right:8px"></i>
+                    Our Mission
+                </h2>
+                <p style="color: var(--text-secondary); line-height: var(--leading-relaxed);">
+                    MediCart was born out of a simple frustration — there was no safe, dedicated platform for Medi-Caps University students to trade used items within their campus. WhatsApp groups were chaotic, general marketplaces felt unsafe, and good deals were lost in the noise.
+                </p>
+                <p style="color: var(--text-secondary); line-height: var(--leading-relaxed); margin-top: var(--space-4);">
+                    We built MediCart to be the trusted marketplace exclusively for verified Medi-Caps students. No strangers, no scams, no shipping — just simple, safe campus trading.
+                </p>
+            </div>
+        </div>
+
+        <div class="card animate-fade-in animate-fade-in-delay-2" style="margin-bottom: var(--space-8);">
+            <div class="card-body" style="padding: var(--space-8);">
+                <h2 style="font-size: var(--text-xl); margin-bottom: var(--space-4); color: var(--primary);">
+                    <i data-lucide="code-2" style="width:20px;height:20px;vertical-align:middle;margin-right:8px"></i>
+                    Tech Stack
+                </h2>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--space-4); margin-top: var(--space-4);">
+                    <div style="padding: var(--space-4); background: var(--primary-light); border-radius: var(--radius-md);">
+                        <strong style="color: var(--primary);">Frontend</strong>
+                        <p style="font-size: var(--text-sm); color: var(--text-secondary); margin-top: var(--space-1);">HTML5, CSS3, JavaScript</p>
+                    </div>
+                    <div style="padding: var(--space-4); background: var(--secondary-light); border-radius: var(--radius-md);">
+                        <strong style="color: var(--secondary);">Backend</strong>
+                        <p style="font-size: var(--text-sm); color: var(--text-secondary); margin-top: var(--space-1);">Python, Flask</p>
+                    </div>
+                    <div style="padding: var(--space-4); background: var(--accent-light); border-radius: var(--radius-md);">
+                        <strong style="color: var(--accent);">Database</strong>
+                        <p style="font-size: var(--text-sm); color: var(--text-secondary); margin-top: var(--space-1);">MySQL, SQLAlchemy</p>
+                    </div>
+                    <div style="padding: var(--space-4); background: rgba(243, 156, 18, 0.12); border-radius: var(--radius-md);">
+                        <strong style="color: var(--warning);">Auth</strong>
+                        <p style="font-size: var(--text-sm); color: var(--text-secondary); margin-top: var(--space-1);">Google OAuth, Flask-Login</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card animate-fade-in animate-fade-in-delay-3">
+            <div class="card-body" style="padding: var(--space-8);">
+                <h2 style="font-size: var(--text-xl); margin-bottom: var(--space-4); color: var(--primary);">
+                    <i data-lucide="sparkles" style="width:20px;height:20px;vertical-align:middle;margin-right:8px"></i>
+                    Key Features
+                </h2>
+                <ul style="color: var(--text-secondary); line-height: 2; padding-left: var(--space-5); list-style: disc;">
+                    <li>Campus-verified user registration</li>
+                    <li>Buy, sell, <strong>and exchange</strong> products</li>
+                    <li>Smart search with category filters</li>
+                    <li>Wishlist with save/unsave</li>
+                    <li>Seller dashboard with Chart.js analytics</li>
+                    <li>Admin moderation panel</li>
+                    <li>Dark mode support</li>
+                    <li>Fully responsive design</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

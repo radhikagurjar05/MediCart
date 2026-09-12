@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}My Wishlist — MediCart{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: calc(var(--navbar-height) + var(--space-8)); padding-bottom: var(--space-12);">
+    
+    <div class="page-header" style="margin-bottom: var(--space-8);">
+        <h1 style="font-size: var(--text-3xl); font-weight: var(--weight-bold); margin-bottom: var(--space-2);">My Wishlist</h1>
+        <p style="color: var(--text-secondary);">Items you've saved for later.</p>
+    </div>
+
+    {% if products %}
+    <div class="grid" style="grid-template-columns: repeat(4, 1fr); gap: var(--space-6);">
+        {% for product in products %}
+        <a href="{{ url_for('product.detail', product_id=product.id) }}" class="card animate-fade-in animate-fade-in-delay-{{ loop.index0 % 4 + 1 }}" style="text-decoration: none; color: inherit; transition: transform var(--transition-fast), box-shadow var(--transition-fast);">
+            <div style="aspect-ratio: 1; width: 100%; overflow: hidden; border-bottom: 1px solid var(--border); background: #f8f9fa;">
+                <img src="{{ product.primary_image }}" alt="{{ product.title }}" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s ease;">
+            </div>
+            <div class="card-body" style="padding: var(--space-4);">
+                <div style="font-size: var(--text-xs); color: var(--primary); font-weight: var(--weight-bold); text-transform: uppercase; margin-bottom: var(--space-2);">{{ product.category.name }}</div>
+                <h3 style="font-size: var(--text-base); font-weight: var(--weight-semibold); margin-bottom: var(--space-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ product.title }}</h3>
+                <div style="display: flex; justify-content: space-between; align-items: flex-end;">
+                    <div>
+                        {% if product.price %}
+                        <span style="font-weight: var(--weight-bold); color: var(--text-primary); font-size: var(--text-lg);">₹{{ "{:,.0f}".format(product.price) }}</span>
+                        {% else %}
+                        <span style="font-weight: var(--weight-bold); color: var(--info); font-size: var(--text-sm); background: var(--info-light); padding: 2px 8px; border-radius: var(--radius-sm);">Exchange</span>
+                        {% endif %}
+                    </div>
+                    <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px;">
+                        <button type="button" 
+                                class="wishlist-btn" 
+                                onclick="event.preventDefault(); event.stopPropagation(); toggleWishlist({{ product.id }}, this);" 
+                                title="Remove from Wishlist" 
+                                style="color: var(--accent);">
+                            <i data-lucide="heart" fill="currentColor" style="width: 18px; height: 18px;"></i>
+                        </button>
+                        <span style="font-size: var(--text-xs); color: var(--text-muted);">{{ product.created_at.strftime('%b %d') }}</span>
+                    </div>
+                </div>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center" style="padding: var(--space-12); background: var(--bg-card); border-radius: var(--radius-lg); border: 1px dashed var(--border);">
+        <i data-lucide="heart-off" style="width: 48px; height: 48px; color: var(--text-muted); margin-bottom: var(--space-4);"></i>
+        <h3 style="font-size: var(--text-lg); font-weight: var(--weight-medium); margin-bottom: var(--space-2);">Your wishlist is empty</h3>
+        <p style="color: var(--text-secondary); margin-bottom: var(--space-4);">Save items you like to keep track of them here.</p>
+        <a href="{{ url_for('main.explore') }}" class="btn btn-primary">Explore Campus</a>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

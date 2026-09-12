@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}Register — MediCart{% endblock %}
+{% block meta_description %}Create an account on MediCart to buy, sell, and exchange items with other students on your campus.{% endblock %}
+
+{% block content %}
+<section class="section" style="padding-top: calc(var(--navbar-height) + var(--space-10)); min-height: 80vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, var(--bg-body), var(--primary-light));">
+    <div class="container" style="max-width: 500px;">
+        <div class="card animate-fade-in" style="box-shadow: var(--shadow-xl); border: none;">
+            <div class="card-body" style="padding: var(--space-8);">
+                <div class="text-center" style="margin-bottom: var(--space-6);">
+                    <div class="navbar-logo" style="margin: 0 auto var(--space-4); width: 48px; height: 48px; font-size: var(--text-2xl);">M</div>
+                    <h1 style="font-size: var(--text-2xl); font-weight: var(--weight-bold); margin-bottom: var(--space-2);">Join MediCart</h1>
+                    <p style="color: var(--text-secondary); font-size: var(--text-sm);">Create your account using your Medi-Caps email (@medicaps.ac.in)</p>
+                </div>
+
+                {% if config.get('GOOGLE_CLIENT_ID') %}
+                <a href="{{ url_for('google.login') }}" class="btn" style="width: 100%; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-primary); margin-bottom: var(--space-6); justify-content: center;">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" alt="Google" style="width: 20px; height: 20px;">
+                    Continue with Google
+                </a>
+                
+                <div style="display: flex; align-items: center; gap: var(--space-4); margin-bottom: var(--space-6);">
+                    <hr style="flex: 1; border: none; border-top: 1px solid var(--border);">
+                    <span style="color: var(--text-muted); font-size: var(--text-xs); text-transform: uppercase;">or sign up with email</span>
+                    <hr style="flex: 1; border: none; border-top: 1px solid var(--border);">
+                </div>
+                {% endif %}
+
+                <form method="POST" action="{{ url_for('auth.register') }}">
+                    <div class="form-group">
+                        <label for="name" class="form-label">Full Name</label>
+                        <input type="text" id="name" name="name" class="form-input" placeholder="e.g. Jane Doe" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email" class="form-label">Medi-Caps Email</label>
+                        <input type="email" id="email" name="email" class="form-input" placeholder="EN23CS301712@medicaps.ac.in" pattern=".+@medicaps\.ac\.in" title="Must be a valid @medicaps.ac.in email address" required>
+                        <p style="font-size: var(--text-xs); color: var(--text-muted); margin-top: var(--space-1);">Must be an official @medicaps.ac.in email address (e.g. EN23CS301712@medicaps.ac.in).</p>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: var(--space-6);">
+                        <label for="password" class="form-label">Password</label>
+                        <input type="password" id="password" name="password" class="form-input" placeholder="Create a strong password" required minlength="8">
+                        <p style="font-size: var(--text-xs); color: var(--text-muted); margin-top: var(--space-2);">Must be at least 8 characters with letters and numbers.</p>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center;">
+                        <i data-lucide="user-plus" style="width:18px;height:18px"></i>
+                        Create Account
+                    </button>
+                </form>
+
+                <p class="text-center" style="margin-top: var(--space-6); font-size: var(--text-sm); color: var(--text-secondary);">
+                    Already have an account? <a href="{{ url_for('auth.login') }}" style="font-weight: var(--weight-semibold);">Log in</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

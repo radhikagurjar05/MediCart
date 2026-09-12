@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block title %}{{ user.display_name }}'s Profile — MediCart{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: calc(var(--navbar-height) + var(--space-8)); padding-bottom: var(--space-12);">
+    
+    <!-- Profile Header -->
+    <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-xl); padding: var(--space-8); margin-bottom: var(--space-8); box-shadow: var(--shadow-md); display: flex; align-items: center; gap: var(--space-6);">
+        {% if user.avatar_url %}
+        <img src="{{ user.avatar_url }}" alt="{{ user.display_name }}" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover;">
+        {% else %}
+        <div style="width: 100px; height: 100px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--secondary)); display: flex; align-items: center; justify-content: center; color: white; font-weight: var(--weight-bold); font-size: var(--text-4xl);">
+            {{ user.initials }}
+        </div>
+        {% endif %}
+        
+        <div>
+            <h1 style="font-size: var(--text-3xl); font-weight: var(--weight-bold); margin-bottom: var(--space-2);">{{ user.display_name }}</h1>
+            <p style="color: var(--text-secondary); margin-bottom: var(--space-4);">Campus Member since {{ user.member_since }}</p>
+            
+            <div style="display: flex; gap: var(--space-6);">
+                <div>
+                    <div style="font-size: var(--text-2xl); font-weight: var(--weight-bold); color: var(--primary);">{{ active_listings|length }}</div>
+                    <div style="font-size: var(--text-sm); color: var(--text-muted); text-transform: uppercase;">Active Listings</div>
+                </div>
+                <div>
+                    <div style="font-size: var(--text-2xl); font-weight: var(--weight-bold); color: var(--success);">{{ total_sold }}</div>
+                    <div style="font-size: var(--text-sm); color: var(--text-muted); text-transform: uppercase;">Items Sold</div>
+                </div>
+            </div>
+        </div>
+        
+        {% if current_user.is_authenticated and current_user.id == user.id %}
+        <div style="margin-left: auto;">
+            <a href="{{ url_for('profile.edit') }}" class="btn btn-secondary">Edit Profile</a>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- User's Listings -->
+    <h2 style="font-size: var(--text-2xl); font-weight: var(--weight-bold); margin-bottom: var(--space-6);">Listings by {{ user.display_name }}</h2>
+    
+    {% if active_listings %}
+    <div class="grid" style="grid-template-columns: repeat(4, 1fr); gap: var(--space-6);">
+        {% for product in active_listings %}
+        <a href="{{ url_for('product.detail', product_id=product.id) }}" class="card animate-fade-in animate-fade-in-delay-{{ loop.index0 % 4 + 1 }}" style="text-decoration: none; color: inherit; transition: transform var(--transition-fast), box-shadow var(--transition-fast);">
+            <div style="aspect-ratio: 1; width: 100%; overflow: hidden; border-bottom: 1px solid var(--border); background: #f8f9fa;">
+                <img src="{{ product.primary_image }}" alt="{{ product.title }}" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s ease;">
+            </div>
+            <div class="card-body" style="padding: var(--space-4);">
+                <div style="font-size: var(--text-xs); color: var(--primary); font-weight: var(--weight-bold); text-transform: uppercase; margin-bottom: var(--space-2);">{{ product.category.name }}</div>
+                <h3 style="font-size: var(--text-base); font-weight: var(--weight-semibold); margin-bottom: var(--space-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ product.title }}</h3>
+                <div style="display: flex; justify-content: space-between; align-items: flex-end;">
+                    <div>
+                        {% if product.price %}
+                        <span style="font-weight: var(--weight-bold); color: var(--text-primary); font-size: var(--text-lg);">₹{{ "{:,.0f}".format(product.price) }}</span>
+                        {% else %}
+                        <span style="font-weight: var(--weight-bold); color: var(--info); font-size: var(--text-sm); background: var(--info-light); padding: 2px 8px; border-radius: var(--radius-sm);">Exchange</span>
+                        {% endif %}
+                    </div>
+                    <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px;">
+                        <button type="button" 
+                                class="wishlist-btn" 
+                                onclick="event.preventDefault(); event.stopPropagation(); toggleWishlist({{ product.id }}, this);" 
+                                title="{% if current_user.is_authenticated and current_user.has_wishlisted(product.id) %}Remove from Wishlist{% else %}Add to Wishlist{% endif %}"
+                                style="color: {% if current_user.is_authenticated and current_user.has_wishlisted(product.id) %}var(--accent){% else %}var(--text-muted){% endif %};">
+                            <i data-lucide="heart" {% if current_user.is_authenticated and current_user.has_wishlisted(product.id) %}fill="currentColor"{% endif %} style="width: 18px; height: 18px;"></i>
+                        </button>
+                        <span style="font-size: var(--text-xs); color: var(--text-muted);">{{ product.created_at.strftime('%b %d') }}</span>
+                    </div>
+                </div>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center" style="padding: var(--space-12); background: var(--bg-card); border-radius: var(--radius-lg); border: 1px dashed var(--border);">
+        <i data-lucide="package" style="width: 48px; height: 48px; color: var(--text-muted); margin-bottom: var(--space-4);"></i>
+        <h3 style="font-size: var(--text-lg); font-weight: var(--weight-medium); margin-bottom: var(--space-2);">No active listings</h3>
+        <p style="color: var(--text-secondary); margin-bottom: var(--space-4);">This user doesn't have any items for sale right now.</p>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

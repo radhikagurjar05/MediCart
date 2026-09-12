@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="{% if current_user.is_authenticated and current_user.dark_mode %}dark{% else %}light{% endif %}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="{% block meta_description %}MediCart — Buy, Sell, and Exchange products within Medi-Caps campus. A trusted marketplace exclusively for college students.{% endblock %}">
+    <title>{% block title %}MediCart{% endblock %} | Buy. Sell. Exchange.</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
+
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/variables.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/responsive.css') }}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar" id="navbar" role="navigation" aria-label="Main navigation">
+        <div class="navbar-inner">
+            <a href="{{ url_for('main.index') }}" class="navbar-brand" aria-label="MediCart Home">
+                <div class="navbar-logo" aria-hidden="true">M</div><span class="navbar-brand-text">Medi<span class="navbar-brand-highlight">Cart</span></span>
+            </a>
+
+            <div class="navbar-nav" id="navbar-nav" role="menubar">
+                <a href="{{ url_for('main.index') }}" class="nav-link {% if request.endpoint == 'main.index' %}active{% endif %}" role="menuitem">
+                    <i data-lucide="home" style="width:16px;height:16px"></i>
+                    Home
+                </a>
+                <a href="{{ url_for('main.explore') }}" class="nav-link {% if request.endpoint == 'main.explore' %}active{% endif %}" role="menuitem">
+                    <i data-lucide="compass" style="width:16px;height:16px"></i>
+                    Explore
+                </a>
+                <a href="{{ url_for('wishlist.index') }}" class="nav-link {% if request.endpoint == 'wishlist.index' %}active{% endif %}" role="menuitem">
+                    <i data-lucide="heart" style="width:16px;height:16px"></i>
+                    Wishlist
+                </a>
+                <a href="{{ url_for('main.about') }}" class="nav-link {% if request.endpoint == 'main.about' %}active{% endif %}" role="menuitem">
+                    <i data-lucide="info" style="width:16px;height:16px"></i>
+                    About
+                </a>
+            </div>
+
+            <div class="navbar-actions">
+                <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode" title="Toggle theme">
+                    <i data-lucide="moon" id="theme-icon-moon" style="width:18px;height:18px"></i>
+                    <i data-lucide="sun" id="theme-icon-sun" style="width:18px;height:18px;display:none"></i>
+                </button>
+                <a href="{{ url_for('product.create') }}" class="btn btn-primary btn-sm" id="btn-sell">
+                    <i data-lucide="plus" style="width:16px;height:16px"></i>
+                    Sell Now
+                </a>
+                
+                {% if current_user.is_authenticated %}
+                <div style="position: relative; margin-left: var(--space-2); display: flex; align-items: center;">
+                    <a href="{{ url_for('profile.view', user_id=current_user.id) }}" class="btn btn-ghost btn-sm" title="Profile">
+                        {% if current_user.avatar_url %}
+                        <img src="{{ current_user.avatar_url }}" alt="Avatar" class="avatar avatar-sm">
+                        {% else %}
+                        <div class="avatar avatar-sm avatar-placeholder">{{ current_user.initials }}</div>
+                        {% endif %}
+                        {{ current_user.display_name }}
+                    </a>
+                    
+                    {% if current_user.is_admin %}
+                    <a href="{{ url_for('admin.index') }}" class="btn btn-ghost btn-sm" title="Admin Panel" style="margin-left: var(--space-2); padding: 0 8px; color: var(--danger);">
+                        <i data-lucide="shield" style="width:18px;height:18px"></i>
+                    </a>
+                    {% endif %}
+                    
+                    <a href="{{ url_for('dashboard.index') }}" class="btn btn-ghost btn-sm" title="Seller Dashboard" style="margin-left: var(--space-2); padding: 0 8px;">
+                        <i data-lucide="layout-dashboard" style="width:18px;height:18px"></i>
+                    </a>
+
+                    <a href="{{ url_for('wishlist.index') }}" class="btn btn-ghost btn-sm" title="Wishlist" style="margin-left: var(--space-2); padding: 0 8px;">
+                        <i data-lucide="heart" style="width:18px;height:18px"></i>
+                    </a>
+
+                    <a href="{{ url_for('profile.settings') }}" class="btn btn-ghost btn-sm" title="Settings" style="margin-left: var(--space-2); padding: 0 8px;">
+                        <i data-lucide="settings" style="width:18px;height:18px"></i>
+                    </a>
+                </div>
+                <a href="{{ url_for('auth.logout') }}" class="btn btn-secondary btn-sm" style="margin-left: var(--space-2);">Logout</a>
+                {% else %}
+                <a href="{{ url_for('auth.login') }}" class="btn btn-secondary btn-sm" id="btn-login">Login</a>
+                {% endif %}
+                
+                <button class="navbar-toggle" id="navbar-toggle" aria-label="Toggle navigation menu" aria-expanded="false">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div class="flash-messages" id="flash-messages" role="alert">
+            {% for category, message in messages %}
+            <div class="flash-message flash-{{ category }}">
+                <span>{{ message }}</span>
+                <button class="flash-close" onclick="this.parentElement.remove()" aria-label="Dismiss">&times;</button>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    {% endwith %}
+
+    <!-- Main Content -->
+    <main id="main-content" role="main">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer" role="contentinfo">
+        <div class="container">
+            <div class="footer-grid">
+                <div>
+                    <div class="footer-brand">
+                        Medi<span class="footer-brand-highlight">Cart</span>
+                    </div>
+                    <p class="footer-description">
+                        A trusted marketplace where verified Medi-Caps University students buy, sell, and exchange products safely.
+                    </p>
+                </div>
+                <div>
+                    <h4 class="footer-heading">Marketplace</h4>
+                    <div class="footer-links">
+                        <a href="{{ url_for('main.explore') }}" class="footer-link">Browse All</a>
+                        <a href="{{ url_for('main.explore', category='textbooks') }}" class="footer-link">Textbooks</a>
+                        <a href="{{ url_for('main.explore', category='electronics') }}" class="footer-link">Electronics</a>
+                        <a href="{{ url_for('main.explore', category='furniture') }}" class="footer-link">Furniture</a>
+                    </div>
+                </div>
+                <div>
+                    <h4 class="footer-heading">Account</h4>
+                    <div class="footer-links">
+                        <a href="{{ url_for('auth.login') }}" class="footer-link">Login</a>
+                        <a href="{{ url_for('auth.register') }}" class="footer-link">Register</a>
+                        <a href="{{ url_for('dashboard.index') }}" class="footer-link">Dashboard</a>
+                        <a href="{{ url_for('profile.settings') }}" class="footer-link">Settings</a>
+                    </div>
+                </div>
+                <div>
+                    <h4 class="footer-heading">About</h4>
+                    <div class="footer-links">
+                        <a href="{{ url_for('main.about') }}" class="footer-link">About Us</a>
+                        <a href="#" class="footer-link">How It Works</a>
+                        <a href="#" class="footer-link">Contact</a>
+                        <a href="#" class="footer-link">Privacy</a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <span>&copy; 2026 MediCart. Built with ❤️ for Medi-Caps students.</span>
+                <div class="footer-socials">
+                    <a href="#" class="footer-social" aria-label="GitHub">
+                        <i data-lucide="github" style="width:16px;height:16px"></i>
+                    </a>
+                    <a href="#" class="footer-social" aria-label="LinkedIn">
+                        <i data-lucide="linkedin" style="width:16px;height:16px"></i>
+                    </a>
+                    <a href="#" class="footer-social" aria-label="Twitter">
+                        <i data-lucide="twitter" style="width:16px;height:16px"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

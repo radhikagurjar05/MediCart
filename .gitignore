@@ -1,0 +1,45 @@
+# Environment
+.env
+venv/
+.venv/
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.egg-info/
+dist/
+build/
+
+# Uploads
+app/static/uploads/products/*
+app/static/uploads/avatars/*
+!app/static/uploads/products/.gitkeep
+!app/static/uploads/avatars/.gitkeep
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Database & SQLite
+instance/
+*.db
+*.sqlite
+*.sqlite3
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Pytest / Cache / Coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Migrations
+migrations/versions/*.pyc

@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}Log In — MediCart{% endblock %}
+{% block meta_description %}Log in to your MediCart account to browse listings, save favorites, and contact sellers on your campus.{% endblock %}
+
+{% block content %}
+<section class="section" style="padding-top: calc(var(--navbar-height) + var(--space-10)); min-height: 80vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, var(--bg-body), var(--primary-light));">
+    <div class="container" style="max-width: 500px;">
+        <div class="card animate-fade-in" style="box-shadow: var(--shadow-xl); border: none;">
+            <div class="card-body" style="padding: var(--space-8);">
+                <div class="text-center" style="margin-bottom: var(--space-6);">
+                    <div class="navbar-logo" style="margin: 0 auto var(--space-4); width: 48px; height: 48px; font-size: var(--text-2xl);">M</div>
+                    <h1 style="font-size: var(--text-2xl); font-weight: var(--weight-bold); margin-bottom: var(--space-2);">Welcome Back</h1>
+                    <p style="color: var(--text-secondary); font-size: var(--text-sm);">Log in to access your campus marketplace</p>
+                </div>
+
+                {% if config.get('GOOGLE_CLIENT_ID') %}
+                <a href="{{ url_for('google.login') }}" class="btn" style="width: 100%; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-primary); margin-bottom: var(--space-6); justify-content: center;">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" alt="Google" style="width: 20px; height: 20px;">
+                    Continue with Google
+                </a>
+                
+                <div style="display: flex; align-items: center; gap: var(--space-4); margin-bottom: var(--space-6);">
+                    <hr style="flex: 1; border: none; border-top: 1px solid var(--border);">
+                    <span style="color: var(--text-muted); font-size: var(--text-xs); text-transform: uppercase;">or log in with email</span>
+                    <hr style="flex: 1; border: none; border-top: 1px solid var(--border);">
+                </div>
+                {% endif %}
+
+                <form method="POST" action="{{ url_for('auth.login', next=request.args.get('next')) }}">
+                    <div class="form-group">
+                        <label for="email" class="form-label">Medi-Caps Email</label>
+                        <input type="email" id="email" name="email" class="form-input" placeholder="EN23CS301712@medicaps.ac.in" required>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: var(--space-4);">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-2);">
+                            <label for="password" class="form-label" style="margin-bottom: 0;">Password</label>
+                            <a href="#" style="font-size: var(--text-xs); font-weight: var(--weight-medium);">Forgot password?</a>
+                        </div>
+                        <input type="password" id="password" name="password" class="form-input" placeholder="Enter your password" required>
+                    </div>
+                    
+                    <div class="form-group" style="display: flex; align-items: center; gap: var(--space-2); margin-bottom: var(--space-6);">
+                        <input type="checkbox" id="remember" name="remember" style="accent-color: var(--primary); width: 16px; height: 16px;">
+                        <label for="remember" style="font-size: var(--text-sm); color: var(--text-secondary); cursor: pointer;">Remember me for 30 days</label>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center;">
+                        <i data-lucide="log-in" style="width:18px;height:18px"></i>
+                        Log In
+                    </button>
+                </form>
+
+                <p class="text-center" style="margin-top: var(--space-6); font-size: var(--text-sm); color: var(--text-secondary);">
+                    Don't have an account? <a href="{{ url_for('auth.register') }}" style="font-weight: var(--weight-semibold);">Sign up</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block title %}Account Settings — MediCart{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: calc(var(--navbar-height) + var(--space-8)); padding-bottom: var(--space-12); max-width: 600px;">
+    
+    <div class="page-header" style="margin-bottom: var(--space-8);">
+        <h1 style="font-size: var(--text-3xl); font-weight: var(--weight-bold); margin-bottom: var(--space-2);">Account Settings</h1>
+        <p style="color: var(--text-secondary);">Manage your preferences and security.</p>
+    </div>
+
+    <!-- Preferences Section -->
+    <div style="background: var(--bg-card); padding: var(--space-8); border-radius: var(--radius-lg); border: 1px solid var(--border); box-shadow: var(--shadow-sm); margin-bottom: var(--space-8);">
+        <h2 style="font-size: var(--text-xl); font-weight: var(--weight-bold); margin-bottom: var(--space-6);">Preferences</h2>
+        
+        <form method="POST" action="{{ url_for('profile.settings') }}">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-6); padding-bottom: var(--space-6); border-bottom: 1px solid var(--border);">
+                <div>
+                    <h3 style="font-weight: var(--weight-semibold); margin-bottom: var(--space-1);">Dark Mode</h3>
+                    <p style="font-size: var(--text-sm); color: var(--text-muted);">Switch between light and dark themes.</p>
+                </div>
+                <label style="position: relative; display: inline-block; width: 50px; height: 26px;">
+                    <input type="checkbox" name="dark_mode" id="dark-mode-toggle" style="opacity: 0; width: 0; height: 0;" {% if current_user.dark_mode %}checked{% endif %}>
+                    <span style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--border); transition: .4s; border-radius: 34px;"></span>
+                    <span style="position: absolute; content: ''; height: 18px; width: 18px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%;"></span>
+                </label>
+            </div>
+
+            {% if current_user.auth_provider == 'local' %}
+            <h2 style="font-size: var(--text-xl); font-weight: var(--weight-bold); margin-bottom: var(--space-6);">Change Password</h2>
+            
+            <div class="form-group" style="margin-bottom: var(--space-4);">
+                <label class="form-label" for="current_password">Current Password</label>
+                <input type="password" id="current_password" name="current_password" class="form-input">
+            </div>
+
+            <div class="form-group" style="margin-bottom: var(--space-4);">
+                <label class="form-label" for="new_password">New Password</label>
+                <input type="password" id="new_password" name="new_password" class="form-input">
+            </div>
+
+            <div class="form-group" style="margin-bottom: var(--space-6);">
+                <label class="form-label" for="confirm_password">Confirm New Password</label>
+                <input type="password" id="confirm_password" name="confirm_password" class="form-input">
+            </div>
+            {% else %}
+            <div style="padding: var(--space-4); background: rgba(0, 184, 148, 0.1); border-radius: var(--radius-md); margin-bottom: var(--space-6);">
+                <p style="color: var(--success); font-size: var(--text-sm); margin: 0; display: flex; align-items: center; gap: var(--space-2);">
+                    <i data-lucide="shield-check" style="width: 18px; height: 18px;"></i>
+                    You are logged in via Google. Password management is handled by your provider.
+                </p>
+            </div>
+            {% endif %}
+
+            <div style="display: flex; justify-content: flex-end;">
+                <button type="submit" class="btn btn-primary">Save Settings</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Danger Zone -->
+    <div style="background: rgba(231, 76, 60, 0.05); border: 1px solid var(--danger); padding: var(--space-8); border-radius: var(--radius-lg);">
+        <h2 style="font-size: var(--text-xl); font-weight: var(--weight-bold); color: var(--danger); margin-bottom: var(--space-2);">Danger Zone</h2>
+        <p style="color: var(--text-secondary); margin-bottom: var(--space-6);">Once you delete your account, there is no going back. Please be certain.</p>
+        
+        <form action="{{ url_for('profile.delete_account') }}" method="POST" onsubmit="return confirm('WARNING: Are you absolutely sure you want to delete your account? This action cannot be undone and will permanently delete all your listings and data.');">
+            <button type="submit" class="btn" style="background: var(--danger); color: white; border: none;">Delete Account</button>
+        </form>
+    </div>
+
+</div>
+
+<!-- Inline CSS for the toggle switch -->
+<style>
+    input:checked + span {
+        background-color: var(--primary);
+    }
+    input:checked + span + span {
+        transform: translateX(24px);
+    }
+</style>
+
+<script>
+    // Live preview of dark mode when toggling
+    document.getElementById('dark-mode-toggle').addEventListener('change', function(e) {
+        const html = document.documentElement;
+        if (e.target.checked) {
+            html.setAttribute('data-theme', 'dark');
+            localStorage.setItem('medicart-theme', 'dark');
+        } else {
+            html.setAttribute('data-theme', 'light');
+            localStorage.setItem('medicart-theme', 'light');
+        }
+    });
+</script>
+{% endblock %}

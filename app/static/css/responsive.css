@@ -1,0 +1,188 @@
+/* ============================================================
+   MediCart — Responsive Breakpoints
+   ============================================================ */
+
+/* ---- Tablet: 768px – 1024px ---- */
+@media (max-width: 1024px) {
+    .hero-content {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .hero-title {
+        font-size: var(--text-4xl);
+    }
+
+    .hero-description {
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .hero-actions {
+        justify-content: center;
+    }
+
+    .hero-stats {
+        justify-content: center;
+    }
+
+    .hero-visual {
+        max-width: 320px;
+    }
+
+    .search-bar-hero {
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .categories-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: var(--space-4);
+    }
+
+    .steps-grid {
+        gap: var(--space-6);
+    }
+
+    .steps-grid::before {
+        display: none;
+    }
+
+    .footer-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: var(--space-8);
+    }
+}
+
+
+/* ---- Mobile: < 768px ---- */
+@media (max-width: 768px) {
+    .navbar-nav {
+        display: none;
+        position: absolute;
+        top: var(--navbar-height);
+        left: 0;
+        right: 0;
+        background: var(--bg-card);
+        border-bottom: 1px solid var(--border);
+        box-shadow: var(--shadow-lg);
+        flex-direction: column;
+        padding: var(--space-4);
+    }
+
+    .navbar-nav.active {
+        display: flex;
+    }
+
+    .navbar-toggle {
+        display: flex;
+    }
+
+    .navbar-actions .btn {
+        display: none;
+    }
+
+    .hero {
+        padding: calc(var(--navbar-height) + var(--space-8)) 0 var(--space-8);
+    }
+
+    .hero-title {
+        font-size: var(--text-3xl);
+    }
+
+    .hero-description {
+        font-size: var(--text-base);
+    }
+
+    .hero-visual {
+        display: none;
+    }
+
+    .hero-stats {
+        gap: var(--space-5);
+    }
+
+    .hero-stat-value {
+        font-size: var(--text-xl);
+    }
+
+    .search-bar-hero {
+        flex-direction: column;
+        border-radius: var(--radius-lg);
+    }
+
+    .search-bar-hero button {
+        border-radius: 0 0 var(--radius-md) var(--radius-md);
+    }
+
+    .categories-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--space-3);
+    }
+
+    .category-card {
+        padding: var(--space-5) var(--space-4);
+    }
+
+    .steps-grid {
+        grid-template-columns: 1fr;
+        gap: var(--space-6);
+    }
+
+    .section {
+        padding: var(--space-10) 0;
+    }
+
+    .section-title {
+        font-size: var(--text-2xl);
+    }
+
+    .cta-title {
+        font-size: var(--text-2xl);
+    }
+
+    .footer-grid {
+        grid-template-columns: 1fr;
+        gap: var(--space-6);
+    }
+
+    .footer-bottom {
+        flex-direction: column;
+        gap: var(--space-4);
+        text-align: center;
+    }
+
+    .flash-messages {
+        left: var(--space-4);
+        right: var(--space-4);
+    }
+
+    .flash-message {
+        min-width: auto;
+    }
+}
+
+
+/* ---- Small Mobile: < 480px ---- */
+@media (max-width: 480px) {
+    .hero-title {
+        font-size: var(--text-2xl);
+    }
+
+    .hero-actions {
+        flex-direction: column;
+    }
+
+    .hero-actions .btn {
+        width: 100%;
+    }
+
+    .hero-stats {
+        flex-direction: column;
+        gap: var(--space-3);
+    }
+
+    .categories-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}

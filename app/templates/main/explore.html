@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+
+{% block title %}Explore Listings — MediCart{% endblock %}
+{% block meta_description %}Browse and search for products across your campus.{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: calc(var(--navbar-height) + var(--space-8)); padding-bottom: var(--space-12);">
+    
+    <div class="page-header" style="margin-bottom: var(--space-8); text-align: center;">
+        <h1 style="font-size: var(--text-4xl); font-weight: var(--weight-bold); margin-bottom: var(--space-4);">Explore Campus</h1>
+        
+        <!-- Large Search Bar -->
+        <form method="GET" action="{{ url_for('main.explore') }}" style="max-width: 600px; margin: 0 auto; display: flex; gap: var(--space-2);">
+            <div style="position: relative; flex: 1;">
+                <i data-lucide="search" style="position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: var(--text-muted); width: 20px; height: 20px;"></i>
+                <input type="text" name="q" value="{{ request_args.get('q', '') }}" placeholder="What are you looking for?" style="width: 100%; padding: 16px 16px 16px 48px; border: 1px solid var(--border); border-radius: var(--radius-full); font-size: var(--text-base); background: var(--bg-card); outline: none; transition: border-color var(--transition-fast), box-shadow var(--transition-fast);" onfocus="this.style.borderColor='var(--primary)'; this.style.boxShadow='0 0 0 3px var(--primary-light)';" onblur="this.style.borderColor='var(--border)'; this.style.boxShadow='none';">
+            </div>
+            <button type="submit" class="btn btn-primary" style="border-radius: var(--radius-full); padding: 0 32px;">Search</button>
+            
+            <!-- Preserve other filters when searching -->
+            {% if request_args.get('category') %}<input type="hidden" name="category" value="{{ request_args.get('category') }}">{% endif %}
+            {% if request_args.get('condition') %}<input type="hidden" name="condition" value="{{ request_args.get('condition') }}">{% endif %}
+            {% if request_args.get('min_price') %}<input type="hidden" name="min_price" value="{{ request_args.get('min_price') }}">{% endif %}
+            {% if request_args.get('max_price') %}<input type="hidden" name="max_price" value="{{ request_args.get('max_price') }}">{% endif %}
+            {% if request_args.get('exchange') %}<input type="hidden" name="exchange" value="{{ request_args.get('exchange') }}">{% endif %}
+        </form>
+    </div>
+
+    <div class="grid" style="grid-template-columns: 250px 1fr; gap: var(--space-8);">
+        
+        <!-- Sidebar Filters -->
+        <aside style="background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-6); height: fit-content;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-6);">
+                <h3 style="font-size: var(--text-lg); font-weight: var(--weight-bold);">Filters</h3>
+                <a href="{{ url_for('main.explore') }}" style="font-size: var(--text-xs); color: var(--primary); text-decoration: none;">Clear All</a>
+            </div>
+
+            <form method="GET" action="{{ url_for('main.explore') }}" id="filter-form">
+                <!-- Preserve Search Query -->
+                {% if request_args.get('q') %}<input type="hidden" name="q" value="{{ request_args.get('q') }}">{% endif %}
+
+                <!-- Categories -->
+                <div style="margin-bottom: var(--space-6);">
+                    <h4 style="font-size: var(--text-sm); font-weight: var(--weight-semibold); color: var(--text-muted); text-transform: uppercase; margin-bottom: var(--space-3);">Category</h4>
+                    <div style="display: flex; flex-direction: column; gap: var(--space-2);">
+                        {% for cat in categories %}
+                        <label style="display: flex; align-items: center; gap: var(--space-2); cursor: pointer; font-size: var(--text-sm);">
+                            <input type="radio" name="category" value="{{ cat.slug }}" {% if request_args.get('category') == cat.slug %}checked{% endif %} onchange="document.getElementById('filter-form').submit();" style="accent-color: var(--primary);">
+                            {{ cat.name }}
+                        </label>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Price Range -->
+                <div style="margin-bottom: var(--space-6);">
+                    <h4 style="font-size: var(--text-sm); font-weight: var(--weight-semibold); color: var(--text-muted); text-transform: uppercase; margin-bottom: var(--space-3);">Price Range (₹)</h4>
+                    <div style="display: flex; align-items: center; gap: var(--space-2);">
+                        <input type="number" name="min_price" value="{{ request_args.get('min_price', '') }}" placeholder="Min" class="form-input" style="padding: 6px; font-size: var(--text-sm);">
+                        <span>-</span>
+                        <input type="number" name="max_price" value="{{ request_args.get('max_price', '') }}" placeholder="Max" class="form-input" style="padding: 6px; font-size: var(--text-sm);">
+                    </div>
+                </div>
+
+                <!-- Condition -->
+                <div style="margin-bottom: var(--space-6);">
+                    <h4 style="font-size: var(--text-sm); font-weight: var(--weight-semibold); color: var(--text-muted); text-transform: uppercase; margin-bottom: var(--space-3);">Condition</h4>
+                    <select name="condition" class="form-input" style="font-size: var(--text-sm); padding: 8px;" onchange="document.getElementById('filter-form').submit();">
+                        <option value="">Any Condition</option>
+                        <option value="new" {% if request_args.get('condition') == 'new' %}selected{% endif %}>Brand New</option>
+                        <option value="like_new" {% if request_args.get('condition') == 'like_new' %}selected{% endif %}>Like New</option>
+                        <option value="good" {% if request_args.get('condition') == 'good' %}selected{% endif %}>Good</option>
+                        <option value="fair" {% if request_args.get('condition') == 'fair' %}selected{% endif %}>Fair</option>
+                        <option value="poor" {% if request_args.get('condition') == 'poor' %}selected{% endif %}>Poor</option>
+                    </select>
+                </div>
+
+                <!-- Exchangeable -->
+                <div style="margin-bottom: var(--space-6);">
+                    <label style="display: flex; align-items: center; gap: var(--space-2); cursor: pointer; font-size: var(--text-sm); font-weight: var(--weight-medium);">
+                        <input type="checkbox" name="exchange" value="true" {% if request_args.get('exchange') %}checked{% endif %} onchange="document.getElementById('filter-form').submit();" style="accent-color: var(--primary); width: 16px; height: 16px;">
+                        Open to Exchange Only
+                    </label>
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; font-size: var(--text-sm);">Apply Filters</button>
+            </form>
+        </aside>
+
+        <!-- Product Grid -->
+        <div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-6);">
+                <p style="color: var(--text-secondary); font-size: var(--text-sm);">Showing <strong style="color: var(--text-primary);">{{ products.items|length }}</strong> of <strong style="color: var(--text-primary);">{{ products.total }}</strong> results</p>
+            </div>
+
+            {% if products.items %}
+            <div class="grid" style="grid-template-columns: repeat(3, 1fr); gap: var(--space-6); margin-bottom: var(--space-8);">
+                {% for product in products.items %}
+                <a href="{{ url_for('product.detail', product_id=product.id) }}" class="card animate-fade-in animate-fade-in-delay-{{ loop.index0 % 3 + 1 }}" style="text-decoration: none; color: inherit; transition: transform var(--transition-fast), box-shadow var(--transition-fast);">
+                    <div style="aspect-ratio: 1; width: 100%; overflow: hidden; border-bottom: 1px solid var(--border); background: #f8f9fa;">
+                        <img src="{{ product.primary_image }}" alt="{{ product.title }}" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s ease;">
+                    </div>
+                    <div class="card-body" style="padding: var(--space-4);">
+                        <div style="font-size: var(--text-xs); color: var(--primary); font-weight: var(--weight-bold); text-transform: uppercase; margin-bottom: var(--space-2);">{{ product.category.name }}</div>
+                        <h3 style="font-size: var(--text-base); font-weight: var(--weight-semibold); margin-bottom: var(--space-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ product.title }}</h3>
+                    <div style="display: flex; justify-content: space-between; align-items: flex-end;">
+                        <div>
+                            {% if product.price %}
+                            <span style="font-weight: var(--weight-bold); color: var(--text-primary); font-size: var(--text-lg);">₹{{ "{:,.0f}".format(product.price) }}</span>
+                            {% else %}
+                            <span style="font-weight: var(--weight-bold); color: var(--info); font-size: var(--text-sm); background: var(--info-light); padding: 2px 8px; border-radius: var(--radius-sm);">Exchange</span>
+                            {% endif %}
+                        </div>
+                        <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px;">
+                            <button type="button" 
+                                    class="wishlist-btn" 
+                                    onclick="event.preventDefault(); event.stopPropagation(); toggleWishlist({{ product.id }}, this);" 
+                                    title="{% if current_user.is_authenticated and current_user.has_wishlisted(product.id) %}Remove from Wishlist{% else %}Add to Wishlist{% endif %}"
+                                    style="color: {% if current_user.is_authenticated and current_user.has_wishlisted(product.id) %}var(--accent){% else %}var(--text-muted){% endif %};">
+                                <i data-lucide="heart" {% if current_user.is_authenticated and current_user.has_wishlisted(product.id) %}fill="currentColor"{% endif %} style="width: 18px; height: 18px;"></i>
+                            </button>
+                            <span style="font-size: var(--text-xs); color: var(--text-muted);">{{ product.created_at.strftime('%b %d') }}</span>
+                        </div>
+                    </div>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+
+            <!-- Pagination -->
+            {% if products.pages > 1 %}
+            <div style="display: flex; justify-content: center; gap: var(--space-2); align-items: center; margin-top: var(--space-12);">
+                {% if products.has_prev %}
+                <a href="{{ url_for('main.explore', page=products.prev_num, q=request_args.get('q'), category=request_args.get('category'), min_price=request_args.get('min_price'), max_price=request_args.get('max_price'), condition=request_args.get('condition'), exchange=request_args.get('exchange')) }}" class="btn" style="border: 1px solid var(--border); background: var(--bg-card);"><i data-lucide="chevron-left" style="width:16px;height:16px;"></i> Prev</a>
+                {% endif %}
+
+                {% for p in products.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                    {% if p %}
+                        {% if p == products.page %}
+                        <span class="btn btn-primary" style="pointer-events: none;">{{ p }}</span>
+                        {% else %}
+                        <a href="{{ url_for('main.explore', page=p, q=request_args.get('q'), category=request_args.get('category'), min_price=request_args.get('min_price'), max_price=request_args.get('max_price'), condition=request_args.get('condition'), exchange=request_args.get('exchange')) }}" class="btn" style="border: 1px solid var(--border); background: var(--bg-card);">{{ p }}</a>
+                        {% endif %}
+                    {% else %}
+                        <span style="color: var(--text-muted);">...</span>
+                    {% endif %}
+                {% endfor %}
+
+                {% if products.has_next %}
+                <a href="{{ url_for('main.explore', page=products.next_num, q=request_args.get('q'), category=request_args.get('category'), min_price=request_args.get('min_price'), max_price=request_args.get('max_price'), condition=request_args.get('condition'), exchange=request_args.get('exchange')) }}" class="btn" style="border: 1px solid var(--border); background: var(--bg-card);">Next <i data-lucide="chevron-right" style="width:16px;height:16px;"></i></a>
+                {% endif %}
+            </div>
+            {% endif %}
+
+            {% else %}
+            <div class="text-center" style="padding: var(--space-12); background: var(--bg-card); border-radius: var(--radius-lg); border: 1px dashed var(--border);">
+                <i data-lucide="search-x" style="width: 48px; height: 48px; color: var(--text-muted); margin-bottom: var(--space-4);"></i>
+                <h3 style="font-size: var(--text-lg); font-weight: var(--weight-medium); margin-bottom: var(--space-2);">No results found</h3>
+                <p style="color: var(--text-secondary); margin-bottom: var(--space-4);">Try adjusting your search or filters to find what you're looking for.</p>
+                <a href="{{ url_for('main.explore') }}" class="btn btn-secondary">Clear All Filters</a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,202 @@
+{% extends "base.html" %}
+
+{% block title %}Home — MediCart{% endblock %}
+{% block meta_description %}MediCart is a campus-restricted marketplace for college students to buy, sell, and exchange textbooks, electronics, furniture, and more.{% endblock %}
+
+{% block content %}
+<!-- ===== Hero Section ===== -->
+<section class="hero" id="hero">
+    <div class="hero-content">
+        <div class="hero-text">
+            <div class="hero-badge">
+                <i data-lucide="shield-check" style="width:16px;height:16px"></i>
+                Campus Verified &bull; Safe Transactions
+            </div>
+
+            <h1 class="hero-title">
+                Buy. Sell. Exchange.<br>
+                <span class="hero-title-gradient">Within Your Campus.</span>
+            </h1>
+
+            <p class="hero-description">
+                The trusted marketplace exclusively for verified college students.
+                Find textbooks, electronics, furniture, and more — from classmates you can trust.
+            </p>
+
+            <!-- Search Bar -->
+            <form class="search-bar-hero" action="{{ url_for('main.explore') }}" method="GET" role="search" id="hero-search">
+                <input
+                    type="text"
+                    name="q"
+                    placeholder="Search for textbooks, electronics, cycles..."
+                    aria-label="Search products"
+                    autocomplete="off"
+                    id="hero-search-input"
+                >
+                <button type="submit" aria-label="Search">
+                    <i data-lucide="search" style="width:20px;height:20px"></i>
+                </button>
+            </form>
+
+            <div class="hero-actions">
+                <a href="{{ url_for('product.create') }}" class="btn btn-primary btn-lg" id="hero-cta-sell">
+                    <i data-lucide="tag" style="width:18px;height:18px"></i>
+                    Start Selling
+                </a>
+                <a href="{{ url_for('main.explore') }}" class="btn btn-secondary btn-lg" id="hero-cta-browse">
+                    <i data-lucide="compass" style="width:18px;height:18px"></i>
+                    Browse Categories
+                </a>
+            </div>
+
+            <div class="hero-stats">
+                <div>
+                    <div class="hero-stat-value">500+</div>
+                    <div class="hero-stat-label">Active Listings</div>
+                </div>
+                <div>
+                    <div class="hero-stat-value">1,200+</div>
+                    <div class="hero-stat-label">Students</div>
+                </div>
+                <div>
+                    <div class="hero-stat-value">98%</div>
+                    <div class="hero-stat-label">Safe Trades</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="hero-visual" aria-hidden="true">
+            <div class="hero-illustration"></div>
+        </div>
+    </div>
+</section>
+
+
+<!-- ===== Categories Section ===== -->
+<section class="section" id="categories">
+    <div class="container">
+        <h2 class="section-title animate-fade-in">Browse by Category</h2>
+        <p class="section-subtitle animate-fade-in">
+            Find exactly what you need. From textbooks to furniture, everything your campus life requires.
+        </p>
+
+        <div class="categories-grid">
+            {% for cat in categories %}
+            <a href="{{ url_for('main.explore', category=cat.slug) }}" class="category-card animate-fade-in animate-fade-in-delay-{{ loop.index0 % 4 + 1 }}" id="category-{{ cat.slug }}">
+                <div class="category-icon" style="background: var(--primary-light); color: var(--primary)">
+                    <i data-lucide="{{ cat.icon }}" style="width:28px;height:28px"></i>
+                </div>
+                <span class="category-name">{{ cat.name }}</span>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- ===== Recent Listings Section ===== -->
+<section class="section" id="recent-listings" style="background: var(--bg-card); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);">
+    <div class="container">
+        <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: var(--space-8);">
+            <div>
+                <h2 class="section-title" style="margin-bottom: var(--space-2); text-align: left;">Fresh on Campus</h2>
+                <p class="section-subtitle" style="margin: 0; text-align: left; max-width: 600px;">
+                    Check out the latest items listed by students on your campus.
+                </p>
+            </div>
+            <a href="{{ url_for('main.explore') }}" class="btn btn-secondary">View All <i data-lucide="arrow-right" style="width:16px;height:16px;margin-left:4px;"></i></a>
+        </div>
+
+        {% if recent_products %}
+        <div class="grid" style="grid-template-columns: repeat(4, 1fr); gap: var(--space-6);">
+            {% for product in recent_products %}
+            <a href="{{ url_for('product.detail', product_id=product.id) }}" class="card animate-fade-in animate-fade-in-delay-{{ loop.index0 % 4 + 1 }}" style="text-decoration: none; color: inherit; transition: transform var(--transition-fast), box-shadow var(--transition-fast);">
+                <div style="aspect-ratio: 1; width: 100%; overflow: hidden; border-bottom: 1px solid var(--border); background: #f8f9fa;">
+                    <img src="{{ product.primary_image }}" alt="{{ product.title }}" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s ease;">
+                </div>
+                <div class="card-body" style="padding: var(--space-4);">
+                    <div style="font-size: var(--text-xs); color: var(--primary); font-weight: var(--weight-bold); text-transform: uppercase; margin-bottom: var(--space-2);">{{ product.category.name }}</div>
+                    <h3 style="font-size: var(--text-base); font-weight: var(--weight-semibold); margin-bottom: var(--space-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ product.title }}</h3>
+                    <div style="display: flex; justify-content: space-between; align-items: flex-end;">
+                        <div>
+                            {% if product.price %}
+                            <span style="font-weight: var(--weight-bold); color: var(--text-primary); font-size: var(--text-lg);">₹{{ "{:,.0f}".format(product.price) }}</span>
+                            {% else %}
+                            <span style="font-weight: var(--weight-bold); color: var(--info); font-size: var(--text-sm); background: var(--info-light); padding: 2px 8px; border-radius: var(--radius-sm);">Exchange</span>
+                            {% endif %}
+                        </div>
+                        <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px;">
+                            <button type="button" 
+                                    class="wishlist-btn" 
+                                    onclick="event.preventDefault(); event.stopPropagation(); toggleWishlist({{ product.id }}, this);" 
+                                    title="{% if current_user.is_authenticated and current_user.has_wishlisted(product.id) %}Remove from Wishlist{% else %}Add to Wishlist{% endif %}"
+                                    style="color: {% if current_user.is_authenticated and current_user.has_wishlisted(product.id) %}var(--accent){% else %}var(--text-muted){% endif %};">
+                                <i data-lucide="heart" {% if current_user.is_authenticated and current_user.has_wishlisted(product.id) %}fill="currentColor"{% endif %} style="width: 18px; height: 18px;"></i>
+                            </button>
+                            <span style="font-size: var(--text-xs); color: var(--text-muted);">{{ product.created_at.strftime('%b %d') }}</span>
+                        </div>
+                    </div>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center" style="padding: var(--space-12); background: var(--bg-body); border-radius: var(--radius-lg); border: 1px dashed var(--border);">
+            <i data-lucide="package-open" style="width: 48px; height: 48px; color: var(--text-muted); margin-bottom: var(--space-4);"></i>
+            <h3 style="font-size: var(--text-lg); font-weight: var(--weight-medium); margin-bottom: var(--space-2);">No listings yet</h3>
+            <p style="color: var(--text-secondary); margin-bottom: var(--space-4);">Be the first one to sell something on MediCart!</p>
+            <a href="{{ url_for('product.create') }}" class="btn btn-primary">Create a Listing</a>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+
+<!-- ===== How It Works Section ===== -->
+<section class="section" id="how-it-works" style="background: var(--bg-card);">
+    <div class="container">
+        <h2 class="section-title">How It Works</h2>
+        <p class="section-subtitle">
+            Three simple steps to start buying, selling, or exchanging on campus.
+        </p>
+
+        <div class="steps-grid">
+            <div class="step-card animate-fade-in animate-fade-in-delay-1">
+                <div class="step-number">1</div>
+                <h3 class="step-title">List Your Item</h3>
+                <p class="step-description">
+                    Snap a photo, set your price, and choose to sell or exchange. Your listing goes live instantly.
+                </p>
+            </div>
+            <div class="step-card animate-fade-in animate-fade-in-delay-2">
+                <div class="step-number">2</div>
+                <h3 class="step-title">Connect Safely</h3>
+                <p class="step-description">
+                    Browse verified listings from your campus. Save favorites and contact sellers directly.
+                </p>
+            </div>
+            <div class="step-card animate-fade-in animate-fade-in-delay-3">
+                <div class="step-number">3</div>
+                <h3 class="step-title">Trade on Campus</h3>
+                <p class="step-description">
+                    Meet at a safe campus spot. Complete the trade. No shipping, no strangers, no hassle.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<!-- ===== CTA Section ===== -->
+<section class="cta-section" id="cta">
+    <div class="container">
+        <h2 class="cta-title animate-fade-in">Ready to Declutter Your Dorm?</h2>
+        <p class="cta-description animate-fade-in animate-fade-in-delay-1">
+            Join hundreds of students already trading on MediCart.
+            It's free, it's safe, and it's your campus.
+        </p>
+        <a href="{{ url_for('auth.register') }}" class="btn-cta animate-fade-in animate-fade-in-delay-2" id="cta-signup">
+            Get Started — It's Free
+        </a>
+    </div>
+</section>
+{% endblock %}
