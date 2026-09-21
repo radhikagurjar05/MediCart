@@ -107,9 +107,21 @@
                 {% else %}
                 <!-- Buyer Actions -->
                 <div style="display: flex; flex-direction: column; gap: var(--space-3);">
-                    <button class="btn btn-primary" style="width: 100%; justify-content: center; font-size: var(--text-lg); padding: var(--space-4);">
+                    {% if current_user.is_authenticated %}
+                    <a href="{{ url_for('chat.contact_seller', listing_id=product.id) }}"
+                       class="btn btn-primary"
+                       style="width: 100%; justify-content: center; font-size: var(--text-lg); padding: var(--space-4);">
+                        <i data-lucide="message-circle" style="width:18px; height:18px;"></i>
                         Contact Seller
-                    </button>
+                    </a>
+                    {% else %}
+                    <a href="{{ url_for('auth.login', next=url_for('chat.contact_seller', listing_id=product.id)) }}"
+                       class="btn btn-primary"
+                       style="width: 100%; justify-content: center; font-size: var(--text-lg); padding: var(--space-4);">
+                        <i data-lucide="log-in" style="width:18px; height:18px;"></i>
+                        Login to Contact Seller
+                    </a>
+                    {% endif %}
                     {% if current_user.is_authenticated %}
                     <button class="btn" onclick="toggleWishlist({{ product.id }}, this)" style="width: 100%; justify-content: center; border: 1px solid var(--border); background: var(--bg-body); color: {% if is_wishlisted %}var(--accent){% else %}var(--text-primary){% endif %}; transition: color 0.3s ease;">
                         <i data-lucide="heart" {% if is_wishlisted %}fill="currentColor"{% endif %} style="width:18px; height:18px;"></i> 

@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block title %}Messages — MediCart{% endblock %}
+{% block meta_description %}Your direct messages and conversations on MediCart.{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/chat.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="container messages-page">
+
+    <div class="messages-header">
+        <h1>
+            <i data-lucide="message-circle" style="width:30px;height:30px;color:var(--primary)"></i>
+            Messages
+            {% if unread_messages_count > 0 %}
+            <span class="msg-badge">{{ unread_messages_count }}</span>
+            {% endif %}
+        </h1>
+        <a href="{{ url_for('main.explore') }}" class="btn btn-primary btn-sm">
+            <i data-lucide="compass" style="width:16px;height:16px"></i>
+            Browse Listings
+        </a>
+    </div>
+
+    {% if conversations %}
+    <div class="conversations-list animate-fade-in">
+        {% for conv in conversations %}
+        {% set other = conv.other_user(current_user.id) %}
+        {% set last_msg = conv.last_message %}
+        {% set unread = conv.unread_count_for(current_user.id) %}
+        {% set is_buyer = (current_user.id == conv.buyer_id) %}
+
+        <a href="{{ url_for('chat.chat_view', conversation_id=conv.id) }}"
+           class="conversation-item {% if unread > 0 %}unread{% endif %}"
+           style="text-decoration:none;">
+
+            <!-- Product image -->
+            {% if conv.listing and conv.listing.primary_image %}
+            <img src="{{ conv.listing.primary_image }}"
+                 alt="{{ conv.listing.title }}"
+                 class="conv-product-img">
+            {% else %}
+            <div class="conv-product-img-placeholder">
+                <i data-lucide="package" style="width:24px;height:24px;color:var(--primary)"></i>
+            </div>
+            {% endif %}
+
+            <!-- Conversation details -->
+            <div class="conv-details">
+                <div class="conv-title">
+                    {{ conv.listing.title if conv.listing else 'Deleted Listing' }}
+                </div>
+                <div class="conv-meta">
+                    <!-- Other user's avatar -->
+                    {% if other.avatar_url %}
+                    <img src="{{ other.avatar_url }}" alt="{{ other.display_name }}"
+                         style="width:18px;height:18px;border-radius:50%;object-fit:cover;">
+                    {% else %}
+                    <div style="width:18px;height:18px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--secondary));display:flex;align-items:center;justify-content:center;color:#fff;font-size:8px;font-weight:700;">
+                        {{ other.initials }}
+                    </div>
+                    {% endif %}
+                    <span class="conv-other-user">{{ other.display_name }}</span>
+                    <span class="conv-role-badge {% if is_buyer %}seller{% else %}buyer{% endif %}">
+                        {% if is_buyer %}Seller{% else %}Buyer{% endif %}
+                    </span>
+                    {% if conv.listing and conv.listing.price %}
+                    <span style="color:var(--primary);font-weight:var(--weight-semibold);font-size:var(--text-sm);">
+                        ₹{{ "{:,.0f}".format(conv.listing.price) }}
+                    </span>
+                    {% endif %}
+                </div>
+
+                <!-- Latest message snippet -->
+                <div class="conv-last-message {% if unread > 0 %}unread-text{% endif %}">
+                    {% if last_msg %}
+                        {% if last_msg.sender_id == current_user.id %}You: {% endif %}
+                        {{ last_msg.message[:70] }}{% if last_msg.message|length > 70 %}…{% endif %}
+                    {% else %}
+                        <em style="color:var(--text-muted)">No messages yet — say hello!</em>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Time + unread badge -->
+            <div class="conv-right">
+                <span class="conv-time">
+                    {% if last_msg %}
+                        {% set ts = last_msg.created_at %}
+                        {{ ts.strftime('%b %d') if ts else '' }}
+                    {% endif %}
+                </span>
+                {% if unread > 0 %}
+                <span class="conv-unread-badge">{{ unread }}</span>
+                {% endif %}
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+
+    {% else %}
+    <div class="chat-empty-state">
+        <div class="chat-empty-icon">
+            <i data-lucide="message-circle" style="width:40px;height:40px"></i>
+        </div>
+        <h2 style="font-size:var(--text-2xl);font-weight:var(--weight-bold);margin-bottom:var(--space-3);color:var(--text-primary)">
+            No conversations yet
+        </h2>
+        <p style="color:var(--text-secondary);max-width:400px;margin:0 auto var(--space-8)">
+            Start a conversation by clicking <strong>"Contact Seller"</strong> on any listing you're interested in.
+        </p>
+        <a href="{{ url_for('main.explore') }}" class="btn btn-primary">
+            <i data-lucide="compass" style="width:18px;height:18px"></i>
+            Browse Listings
+        </a>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

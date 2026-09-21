@@ -43,4 +43,5 @@ initialize_database()
 app = create_app()
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    from app.extensions import socketio
+    socketio.run(app, debug=True, port=5000, allow_unsafe_werkzeug=True)

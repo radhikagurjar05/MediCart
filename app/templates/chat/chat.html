@@ -1,0 +1,382 @@
+{% extends "base.html" %}
+
+{% block title %}Chat — {{ conversation.listing.title if conversation.listing else 'Conversation' }} — MediCart{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/chat.css') }}">
+<style>
+    /* Override default body padding for full-height chat */
+    body { overflow: hidden; }
+    #main-content { height: 100%; }
+</style>
+{% endblock %}
+
+{% block content %}
+{# Store values for JS #}
+<div id="chat-data"
+     data-conv-id="{{ conversation.id }}"
+     data-current-user="{{ current_user.id }}"
+     data-current-user-name="{{ current_user.display_name }}"
+     data-current-user-initials="{{ current_user.initials }}"
+     data-current-user-avatar="{{ current_user.avatar_url or '' }}"
+     data-other-user-id="{{ other_user.id }}"
+     data-other-user-name="{{ other_user.display_name }}"
+     style="display:none"></div>
+
+<div class="chat-page-wrapper">
+
+    <!-- Connection status bar (hidden when ok) -->
+    <div class="chat-status-bar" id="chat-status-bar">Connecting…</div>
+
+    <!-- ===== CHAT HEADER ===== -->
+    <div class="chat-header">
+        <a href="{{ url_for('chat.messages') }}" class="chat-header-back" title="Back to Messages">
+            <i data-lucide="arrow-left" style="width:18px;height:18px"></i>
+        </a>
+
+        {% if conversation.listing %}
+        <img src="{{ conversation.listing.primary_image }}"
+             alt="{{ conversation.listing.title }}"
+             class="chat-header-product-img">
+        {% endif %}
+
+        <div class="chat-header-info">
+            <div class="chat-header-title">
+                {{ conversation.listing.title if conversation.listing else 'Conversation' }}
+            </div>
+            <div class="chat-header-subtitle">
+                <!-- Other user's mini avatar -->
+                {% if other_user.avatar_url %}
+                <img src="{{ other_user.avatar_url }}" alt="{{ other_user.display_name }}"
+                     style="width:20px;height:20px;border-radius:50%;object-fit:cover;">
+                {% else %}
+                <div style="width:20px;height:20px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--secondary));display:flex;align-items:center;justify-content:center;color:#fff;font-size:9px;font-weight:700;">
+                    {{ other_user.initials }}
+                </div>
+                {% endif %}
+                <span>{{ other_user.display_name }}</span>
+
+                {% if current_user.id == conversation.buyer_id %}
+                <span style="font-size:var(--text-xs);color:var(--text-muted)">(Seller)</span>
+                {% else %}
+                <span style="font-size:var(--text-xs);color:var(--text-muted)">(Buyer)</span>
+                {% endif %}
+
+                {% if conversation.listing and conversation.listing.price %}
+                <span class="chat-header-price">₹{{ "{:,.0f}".format(conversation.listing.price) }}</span>
+                {% endif %}
+            </div>
+        </div>
+
+        {% if conversation.listing %}
+        <div class="chat-header-action">
+            <a href="{{ url_for('product.detail', product_id=conversation.listing.id) }}"
+               class="btn btn-sm"
+               style="border:1px solid var(--border);background:var(--bg-body);color:var(--text-secondary);font-size:var(--text-sm);">
+                <i data-lucide="external-link" style="width:14px;height:14px"></i>
+                View Listing
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- ===== MESSAGES AREA ===== -->
+    <div class="chat-messages-area" id="chat-messages-area">
+
+        {% if not messages %}
+        <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--text-muted);text-align:center;padding:var(--space-8);">
+            <i data-lucide="message-circle" style="width:48px;height:48px;margin-bottom:var(--space-4);color:var(--primary-light,#c4b8f8)"></i>
+            <p style="font-size:var(--text-sm);">No messages yet.<br>Send the first message!</p>
+        </div>
+        {% else %}
+
+        {% set ns = namespace(prev_date=None) %}
+        {% for msg in messages %}
+        {% set msg_date = msg.created_at.strftime('%b %d, %Y') if msg.created_at else '' %}
+
+        {% if msg_date != ns.prev_date %}
+        <div class="chat-date-separator">
+            <span>{{ msg_date }}</span>
+        </div>
+        {% set ns.prev_date = msg_date %}
+        {% endif %}
+
+        {% set is_sent = (msg.sender_id == current_user.id) %}
+        <div class="chat-message-row {% if is_sent %}sent{% else %}received{% endif %}"
+             data-msg-id="{{ msg.id }}">
+
+            <!-- Avatar (only for received messages) -->
+            {% if not is_sent %}
+                {% if other_user.avatar_url %}
+                <img src="{{ other_user.avatar_url }}" alt="{{ other_user.display_name }}"
+                     class="chat-avatar-mini">
+                {% else %}
+                <div class="chat-avatar-mini-placeholder">{{ other_user.initials }}</div>
+                {% endif %}
+            {% endif %}
+
+            <div style="display:flex;flex-direction:column;{% if is_sent %}align-items:flex-end{% else %}align-items:flex-start{% endif %}">
+                <div class="chat-bubble">
+                    {{ msg.message | e }}
+                </div>
+                <div class="chat-bubble-meta">
+                    <span class="chat-time">{{ msg.created_at.strftime('%I:%M %p') if msg.created_at else '' }}</span>
+                    {% if is_sent %}
+                    <span class="chat-read-tick {% if msg.is_read %}read{% endif %}">
+                        <i data-lucide="check-check" style="width:13px;height:13px"></i>
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+
+        </div>
+        {% endfor %}
+        {% endif %}
+    </div>
+
+    <!-- ===== INPUT AREA ===== -->
+    <div class="chat-input-area">
+        <div class="chat-input-wrapper">
+            <textarea class="chat-input"
+                      id="chat-input"
+                      rows="1"
+                      placeholder="Type a message…"
+                      aria-label="Message input"
+                      autocomplete="off"></textarea>
+        </div>
+        <button class="chat-send-btn" id="chat-send-btn" title="Send message" disabled>
+            <i data-lucide="send" style="width:18px;height:18px"></i>
+        </button>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Socket.IO client -->
+<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+
+<script>
+(function () {
+    'use strict';
+
+    // Read data from hidden div
+    const chatDataEl = document.getElementById('chat-data');
+    const CONV_ID = parseInt(chatDataEl.dataset.convId, 10);
+    const CURRENT_USER_ID = parseInt(chatDataEl.dataset.currentUser, 10);
+    const CURRENT_NAME = chatDataEl.dataset.currentUserName;
+    const CURRENT_INITIALS = chatDataEl.dataset.currentUserInitials;
+    const CURRENT_AVATAR = chatDataEl.dataset.currentUserAvatar;
+
+    const messagesArea = document.getElementById('chat-messages-area');
+    const inputEl = document.getElementById('chat-input');
+    const sendBtn = document.getElementById('chat-send-btn');
+    const statusBar = document.getElementById('chat-status-bar');
+
+    // ----------------------------------------------------------------
+    // Auto-resize textarea
+    // ----------------------------------------------------------------
+    inputEl.addEventListener('input', function () {
+        this.style.height = 'auto';
+        this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+        sendBtn.disabled = this.value.trim() === '';
+    });
+
+    // ----------------------------------------------------------------
+    // Scroll to bottom
+    // ----------------------------------------------------------------
+    function scrollToBottom(smooth) {
+        messagesArea.scrollTo({ top: messagesArea.scrollHeight, behavior: smooth ? 'smooth' : 'auto' });
+    }
+    scrollToBottom(false);
+
+    // ----------------------------------------------------------------
+    // Date formatting helpers
+    // ----------------------------------------------------------------
+    function formatTime(isoStr) {
+        if (!isoStr) return '';
+        const d = new Date(isoStr + (isoStr.endsWith('Z') ? '' : 'Z'));
+        return d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+    }
+
+    function formatDate(isoStr) {
+        if (!isoStr) return '';
+        const d = new Date(isoStr + (isoStr.endsWith('Z') ? '' : 'Z'));
+        return d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+    }
+
+    // ----------------------------------------------------------------
+    // Append a message bubble to the DOM
+    // ----------------------------------------------------------------
+    let lastRenderedDate = null;
+
+    function appendMessage(data) {
+        const isSent = (data.sender_id === CURRENT_USER_ID);
+        const msgDate = formatDate(data.created_at);
+
+        // Date separator
+        if (msgDate && msgDate !== lastRenderedDate) {
+            const sep = document.createElement('div');
+            sep.className = 'chat-date-separator';
+            sep.innerHTML = `<span>${msgDate}</span>`;
+            messagesArea.appendChild(sep);
+            lastRenderedDate = msgDate;
+        }
+
+        // Message row
+        const row = document.createElement('div');
+        row.className = `chat-message-row ${isSent ? 'sent' : 'received'}`;
+        row.dataset.msgId = data.id;
+
+        // Avatar (received only)
+        const avatarHtml = isSent ? '' : (
+            data.sender_avatar
+                ? `<img src="${data.sender_avatar}" alt="${escapeHtml(data.sender_name)}" class="chat-avatar-mini">`
+                : `<div class="chat-avatar-mini-placeholder">${escapeHtml(data.sender_initials || 'U')}</div>`
+        );
+
+        const tickClass = data.is_read ? 'chat-read-tick read' : 'chat-read-tick';
+        const readTick = isSent
+            ? `<span class="${tickClass}"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 6 9 17 4 12"/><polyline points="22 6 13 17"/></svg></span>`
+            : '';
+
+        row.innerHTML = `
+            ${avatarHtml}
+            <div style="display:flex;flex-direction:column;${isSent ? 'align-items:flex-end' : 'align-items:flex-start'}">
+                <div class="chat-bubble">${escapeHtml(data.message)}</div>
+                <div class="chat-bubble-meta">
+                    <span class="chat-time">${formatTime(data.created_at)}</span>
+                    ${readTick}
+                </div>
+            </div>`;
+
+        messagesArea.appendChild(row);
+        scrollToBottom(true);
+
+        // Re-render lucide icons for the new SVGs won't be needed since we use raw SVG above
+    }
+
+    function escapeHtml(str) {
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
+
+    // ----------------------------------------------------------------
+    // Mark existing sent messages that are now read
+    // ----------------------------------------------------------------
+    function markAllTicksRead() {
+        document.querySelectorAll('.chat-read-tick').forEach(el => el.classList.add('read'));
+    }
+
+    // ----------------------------------------------------------------
+    // Socket.IO setup
+    // ----------------------------------------------------------------
+    const socket = io({ transports: ['websocket', 'polling'] });
+
+    socket.on('connect', function () {
+        statusBar.className = 'chat-status-bar connected visible';
+        statusBar.textContent = 'Connected';
+        setTimeout(() => statusBar.classList.remove('visible'), 1500);
+
+        // Join personal room for unread badge updates
+        socket.emit('join_user');
+        // Join chat room
+        socket.emit('join_chat', { conversation_id: CONV_ID });
+    });
+
+    socket.on('disconnect', function () {
+        statusBar.className = 'chat-status-bar disconnected visible';
+        statusBar.textContent = 'Disconnected — trying to reconnect…';
+    });
+
+    socket.on('connect_error', function () {
+        statusBar.className = 'chat-status-bar disconnected visible';
+        statusBar.textContent = 'Connection failed — retrying…';
+    });
+
+    socket.on('error', function (data) {
+        console.error('[Chat error]', data.message);
+    });
+
+    // Receive new message from room
+    socket.on('new_message', function (data) {
+        // Avoid duplicates (if we sent it ourselves via socket, don't double-append)
+        if (document.querySelector(`.chat-message-row[data-msg-id="${data.id}"]`)) return;
+        appendMessage(data);
+
+        // If message is from the other person, mark as read immediately
+        if (data.sender_id !== CURRENT_USER_ID) {
+            socket.emit('mark_as_read', { conversation_id: CONV_ID });
+        }
+    });
+
+    // Unread count update (updates navbar badge across all pages)
+    socket.on('unread_update', function (data) {
+        updateNavBadge(data.count);
+    });
+
+    // Other user acknowledged read
+    socket.on('messages_read', function (data) {
+        if (data.conversation_id === CONV_ID) {
+            markAllTicksRead();
+        }
+    });
+
+    // ----------------------------------------------------------------
+    // Send message
+    // ----------------------------------------------------------------
+    function sendMessage() {
+        const text = inputEl.value.trim();
+        if (!text) return;
+
+        socket.emit('send_message', {
+            conversation_id: CONV_ID,
+            message: text
+        });
+
+        inputEl.value = '';
+        inputEl.style.height = 'auto';
+        sendBtn.disabled = true;
+        inputEl.focus();
+    }
+
+    sendBtn.addEventListener('click', sendMessage);
+
+    inputEl.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            if (!sendBtn.disabled) sendMessage();
+        }
+    });
+
+    // ----------------------------------------------------------------
+    // Navbar badge helper
+    // ----------------------------------------------------------------
+    function updateNavBadge(count) {
+        const badges = document.querySelectorAll('.nav-msg-badge');
+        badges.forEach(b => {
+            if (count > 0) {
+                b.textContent = count > 99 ? '99+' : count;
+                b.style.display = 'inline-flex';
+            } else {
+                b.style.display = 'none';
+            }
+        });
+    }
+
+    // Initialise last rendered date from existing messages
+    const existingRows = messagesArea.querySelectorAll('.chat-message-row');
+    if (existingRows.length > 0) {
+        const lastSep = messagesArea.querySelectorAll('.chat-date-separator');
+        if (lastSep.length > 0) {
+            lastRenderedDate = lastSep[lastSep.length - 1].querySelector('span').textContent;
+        }
+    }
+
+})();
+</script>
+{% endblock %}
