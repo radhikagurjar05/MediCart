@@ -12,6 +12,8 @@ def initialize_database():
     """Automatically create the database if it doesn't exist and run seeds."""
     db_url = os.environ.get('DATABASE_URL')
     
+    # Only attempt MySQL auto-creation for local MySQL databases
+    # PostgreSQL on Render is pre-created by the platform
     if db_url and db_url.startswith('mysql'):
         parsed = urlparse(db_url)
         db_name = parsed.path.lstrip('/')
