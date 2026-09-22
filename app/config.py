@@ -4,9 +4,19 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
+def get_database_uri(default='sqlite:///medicart.db'):
+    db_url = os.getenv('DATABASE_URL')
+    if not db_url:
+        return default
+    # Render / Heroku compatibility: convert postgres:// to postgresql://
+    if db_url.startswith('postgres://'):
+        db_url = db_url.replace('postgres://', 'postgresql://', 1)
+    return db_url
+
+
 class Config:
     """Base configuration."""
-    SECRET_KEY = os.getenv('SECRET_KEY', 'dev-fallback-secret-key')
+    SECRET_KEY = os.getenv('SECRET_KEY', 'dev-fallback-secret-key-medicart-2026')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     MAX_CONTENT_LENGTH = int(os.getenv('MAX_CONTENT_LENGTH', 5 * 1024 * 1024))
     UPLOAD_FOLDER = os.getenv('UPLOAD_FOLDER', 'app/static/uploads')
@@ -20,24 +30,13 @@ class Config:
 class DevelopmentConfig(Config):
     """Development configuration."""
     DEBUG = True
-    SQLALCHEMY_DATABASE_URI = os.getenv(
-        'DATABASE_URL',
-        'sqlite:///medicart.db'
-    )
+    SQLALCHEMY_DATABASE_URI = get_database_uri('sqlite:///medicart.db')
 
 
 class ProductionConfig(Config):
     """Production configuration."""
     DEBUG = False
-
-    @staticmethod
-    def _fix_db_url(url):
-        """Render provides postgres:// but SQLAlchemy requires postgresql://."""
-        if url and url.startswith('postgres://'):
-            url = url.replace('postgres://', 'postgresql://', 1)
-        return url
-
-    SQLALCHEMY_DATABASE_URI = _fix_db_url.__func__(os.getenv('DATABASE_URL'))
+    SQLALCHEMY_DATABASE_URI = get_database_uri('sqlite:///medicart.db')
 
 
 class TestingConfig(Config):

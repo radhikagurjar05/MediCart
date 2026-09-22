@@ -9,7 +9,7 @@ services:
     runtime: python
     plan: free
     buildCommand: chmod +x build.sh && ./build.sh
-    startCommand: gunicorn run:app --bind 0.0.0.0:$PORT
+    startCommand: gunicorn --worker-class gthread --threads 4 run:app --bind 0.0.0.0:$PORT
     envVars:
       - key: FLASK_ENV
         value: production

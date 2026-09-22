@@ -12,10 +12,10 @@ CATEGORIES = [
     {'name': 'Miscellaneous', 'slug': 'misc', 'icon': 'box'},
 ]
 
-def seed_categories():
-    app = create_app()
+def seed_categories(app_instance=None):
+    app = app_instance or create_app()
     with app.app_context():
-        # db.create_all() has already been run by the factory, but we'll ensure tables exist
+        # Ensure all tables exist
         db.create_all()
         
         for cat_data in CATEGORIES:

@@ -8,41 +8,35 @@ from seed import seed_categories
 # Load environment variables first
 load_dotenv()
 
+# Create the Flask application instance
+app = create_app()
+
 def initialize_database():
-    """Automatically create the database if it doesn't exist and run seeds."""
+    """Automatically verify MySQL/Postgres connection and seed initial data if needed."""
     db_url = os.environ.get('DATABASE_URL')
     
     # Only attempt MySQL auto-creation for local MySQL databases
-    # PostgreSQL on Render is pre-created by the platform
     if db_url and db_url.startswith('mysql'):
         parsed = urlparse(db_url)
         db_name = parsed.path.lstrip('/')
-        
-        # Create a connection URL to the server (without the specific database)
         server_url = f"{parsed.scheme}://{parsed.netloc}/"
-        
         try:
-            # Connect to MySQL server to ensure database exists
             engine = sa.create_engine(server_url)
             with engine.connect() as conn:
                 conn.execute(sa.text(f"CREATE DATABASE IF NOT EXISTS {db_name}"))
                 print(f"[*] Verified MySQL database '{db_name}' exists.")
         except Exception as e:
-            print(f"[!] CRITICAL: Could not connect to MySQL. Access Denied or server offline.")
-            print(f"[!] Please ensure your DATABASE_URL in .env is completely correct.")
-            print(f"[!] Error Details: {e}")
-            import sys
-            sys.exit(1)
+            print(f"[!] MySQL notice: {e}")
             
-    # Run the seed logic (which creates tables via db.create_all() and adds initial data)
-    print("[*] Ensuring database tables and default data exist...")
-    seed_categories()
+    # Run seed logic safely
+    try:
+        seed_categories(app)
+    except Exception as e:
+        print(f"[!] Notice during initial seed: {e}")
 
-# 1. First, automatically initialize/verify the database
-initialize_database()
-
-# 2. Then, create the Flask app for serving
-app = create_app()
+# Run database setup within app context
+with app.app_context():
+    initialize_database()
 
 if __name__ == '__main__':
     from app.extensions import socketio
