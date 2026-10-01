@@ -18,41 +18,15 @@ class UserService:
         user.phone = data.get('phone', user.phone)
         
         if avatar_file and avatar_file.filename:
-            # Process avatar via ImageService
-            try:
-                # We can reuse ImageService but we might want a different path.
-                # However, ImageService currently hardcodes the 'products' path.
-                # Let's write a direct avatar processing here or add it to ImageService.
-                # For simplicity, we'll do it manually here for avatars.
-                from PIL import Image
-                import uuid
-                
-                filename = f"{uuid.uuid4().hex}.webp"
-                upload_dir = os.path.join(current_app.root_path, 'static', 'uploads', 'avatars', str(user.id))
-                os.makedirs(upload_dir, exist_ok=True)
-                filepath = os.path.join(upload_dir, filename)
-                
-                # Open, convert to RGB, resize and save as WebP
-                img = Image.open(avatar_file)
-                if img.mode != 'RGB':
-                    img = img.convert('RGB')
-                    
-                # Crop to square for avatars
-                width, height = img.size
-                min_dim = min(width, height)
-                left = (width - min_dim) / 2
-                top = (height - min_dim) / 2
-                right = (width + min_dim) / 2
-                bottom = (height + min_dim) / 2
-                img = img.crop((left, top, right, bottom))
-                img = img.resize((300, 300), Image.Resampling.LANCZOS)
-                
-                img.save(filepath, 'WEBP', quality=85)
-                
-                # Set URL
-                user.avatar_url = f"/static/uploads/avatars/{user.id}/{filename}"
-            except Exception as e:
-                return False, f"Failed to upload avatar: {str(e)}"
+            # Delete previous avatar if exists
+            if user.avatar_url:
+                ImageService.delete_image(user.avatar_url)
+            
+            avatar_url = ImageService.process_and_save_avatar(avatar_file, user.id)
+            if avatar_url:
+                user.avatar_url = avatar_url
+            else:
+                return False, "Failed to process and upload avatar image."
                 
         try:
             db.session.commit()

@@ -16,6 +16,7 @@ app/static/uploads/products/*
 app/static/uploads/avatars/*
 !app/static/uploads/products/.gitkeep
 !app/static/uploads/avatars/.gitkeep
+!app/static/uploads/products/*.webp
 
 # IDE
 .vscode/

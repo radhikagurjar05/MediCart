@@ -37,6 +37,7 @@
         {% if conversation.listing %}
         <img src="{{ conversation.listing.primary_image }}"
              alt="{{ conversation.listing.title }}"
+             onerror="this.onerror=null; this.src='/static/images/product-placeholder.svg';"
              class="chat-header-product-img">
         {% endif %}
 

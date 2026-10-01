@@ -40,6 +40,7 @@
             {% if conv.listing and conv.listing.primary_image %}
             <img src="{{ conv.listing.primary_image }}"
                  alt="{{ conv.listing.title }}"
+                 onerror="this.onerror=null; this.src='/static/images/product-placeholder.svg';"
                  class="conv-product-img">
             {% else %}
             <div class="conv-product-img-placeholder">

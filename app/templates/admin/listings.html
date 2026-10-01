@@ -35,7 +35,7 @@
                     <tr style="border-bottom: 1px solid var(--border);">
                         <td style="padding: var(--space-4);">
                             <div style="display: flex; align-items: center; gap: var(--space-3);">
-                                <img src="{{ product.primary_image }}" alt="" style="width: 48px; height: 48px; object-fit: cover; border-radius: var(--radius-sm);">
+                                <img src="{{ product.primary_image }}" alt="" onerror="this.onerror=null; this.src='/static/images/product-placeholder.svg';" style="width: 48px; height: 48px; object-fit: cover; border-radius: var(--radius-sm);">
                                 <div>
                                     <div style="font-weight: var(--weight-bold);"><a href="{{ url_for('product.detail', product_id=product.id) }}" style="color: inherit; text-decoration: none;" target="_blank">{{ product.title }} <i data-lucide="external-link" style="width:12px;height:12px;color:var(--text-muted);"></i></a></div>
                                     <div style="font-size: var(--text-xs); color: var(--text-muted);">{{ product.category.name }} • {% if product.price %}₹{{ "{:,.0f}".format(product.price) }}{% else %}Exchange{% endif %}</div>

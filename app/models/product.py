@@ -55,7 +55,7 @@ class Product(db.Model):
     def primary_image(self):
         """Get the primary image URL or a placeholder if none exists."""
         if not self.images:
-            return '/static/images/product-placeholder.jpg'
+            return '/static/images/product-placeholder.svg'
         primary = next((img for img in self.images if img.is_primary), self.images[0])
         return primary.image_url
         

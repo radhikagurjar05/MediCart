@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="100%" height="100%">
+  <rect width="400" height="400" fill="#f1f5f9"/>
+  <circle cx="200" cy="170" r="60" fill="#e2e8f0"/>
+  <path d="M175 160 L200 135 L225 160 M200 138 L200 195" stroke="#94a3b8" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <rect x="165" y="195" width="70" height="4" rx="2" fill="#94a3b8"/>
+  <text x="200" y="270" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="16" font-weight="600" fill="#64748b" text-anchor="middle">No Image Available</text>
+  <text x="200" y="295" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="13" fill="#94a3b8" text-anchor="middle">MediCart Campus Marketplace</text>
+</svg>
