@@ -46,12 +46,27 @@ class ProductService:
             db.session.add(product)
             db.session.flush() # Get product ID
             
-            # Process and attach images
-            images = files.getlist('images')
+            # Process and attach images (handle ImmutableMultiDict, standard dict, list, or direct URLs)
+            uploaded_files = []
+            if files:
+                if hasattr(files, 'getlist'):
+                    for key in ['images', 'image', 'photos', 'file', 'files', 'images[]']:
+                        uploaded_files.extend(files.getlist(key))
+                    for key, val in files.items():
+                        if val not in uploaded_files:
+                            uploaded_files.append(val)
+                elif isinstance(files, dict):
+                    for val in files.values():
+                        if isinstance(val, (list, tuple)):
+                            uploaded_files.extend(val)
+                        else:
+                            uploaded_files.append(val)
+                elif isinstance(files, (list, tuple)):
+                    uploaded_files.extend(files)
+
             primary_set = False
-            
-            for file in images:
-                if file and file.filename:
+            for file in uploaded_files:
+                if file and hasattr(file, 'filename') and file.filename:
                     image_url = ImageService.process_and_save_product_image(file)
                     if image_url:
                         prod_img = ProductImage(
@@ -61,6 +76,22 @@ class ProductService:
                         )
                         db.session.add(prod_img)
                         primary_set = True
+
+            # Also check for direct image URLs if provided in data
+            direct_urls = []
+            if hasattr(data, 'getlist'):
+                direct_urls = data.getlist('image_urls')
+            if not direct_urls and data.get('image_url'):
+                direct_urls = [data.get('image_url')]
+            for url in direct_urls:
+                if url and isinstance(url, str) and url.strip():
+                    prod_img = ProductImage(
+                        product_id=product.id,
+                        image_url=url.strip(),
+                        is_primary=not primary_set
+                    )
+                    db.session.add(prod_img)
+                    primary_set = True
                         
             db.session.commit()
             return True, product.id
@@ -110,8 +141,8 @@ class ProductService:
         return query.order_by(Product.created_at.desc()).paginate(page=page, per_page=per_page, error_out=False)
         
     @staticmethod
-    def update_product(product_id, user_id, data, is_admin=False):
-        """Update a product listing."""
+    def update_product(product_id, user_id, data, files=None, is_admin=False):
+        """Update a product listing and optionally add new images."""
         product = Product.query.get(product_id)
         if not product:
             return False, "Product not found."
@@ -148,6 +179,37 @@ class ProductService:
             product.is_exchangeable = is_exchangeable
             product.exchange_preferences = data.get('exchange_preferences')
             product.condition = data.get('condition', product.condition)
+
+            # Process new images if uploaded
+            if files:
+                uploaded_files = []
+                if hasattr(files, 'getlist'):
+                    for key in ['images', 'image', 'photos', 'file', 'files', 'images[]']:
+                        uploaded_files.extend(files.getlist(key))
+                    for key, val in files.items():
+                        if val not in uploaded_files:
+                            uploaded_files.append(val)
+                elif isinstance(files, dict):
+                    for val in files.values():
+                        if isinstance(val, (list, tuple)):
+                            uploaded_files.extend(val)
+                        else:
+                            uploaded_files.append(val)
+                elif isinstance(files, (list, tuple)):
+                    uploaded_files.extend(files)
+
+                has_primary = any(img.is_primary for img in product.images)
+                for file in uploaded_files:
+                    if file and hasattr(file, 'filename') and file.filename:
+                        image_url = ImageService.process_and_save_product_image(file)
+                        if image_url:
+                            prod_img = ProductImage(
+                                product_id=product.id,
+                                image_url=image_url,
+                                is_primary=not has_primary
+                            )
+                            db.session.add(prod_img)
+                            has_primary = True
             
             db.session.commit()
             return True, "Listing updated successfully."

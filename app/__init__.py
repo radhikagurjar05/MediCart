@@ -85,6 +85,17 @@ def create_app(config_name=None):
         )
         app.register_blueprint(google_bp, url_prefix="/auth/login")
 
+    # Custom route to serve uploaded files gracefully with fallback (for server restarts / ephemeral disks)
+    from flask import send_from_directory
+    @app.route('/static/uploads/<path:filename>')
+    def serve_uploaded_file(filename):
+        upload_dir = os.path.join(app.root_path, 'static', 'uploads')
+        file_path = os.path.join(upload_dir, filename)
+        if os.path.exists(file_path):
+            return send_from_directory(upload_dir, filename)
+        # If missing on disk, return default placeholder with HTTP 200
+        return send_from_directory(os.path.join(app.root_path, 'static', 'images'), 'product-placeholder.svg')
+
     # Create database tables
     with app.app_context():
         db.create_all()
