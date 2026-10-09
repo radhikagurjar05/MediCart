@@ -204,7 +204,7 @@
         if (window.__medicart_socket_global) return;
         window.__medicart_socket_global = true;
 
-        var socket = io({ transports: ['websocket', 'polling'] });
+        var socket = io({ transports: ['websocket'] });
 
         socket.on('connect', function () {
             socket.emit('join_user');

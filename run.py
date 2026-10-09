@@ -34,10 +34,8 @@ def initialize_database():
     except Exception as e:
         print(f"[!] Notice during initial seed: {e}")
 
-# Run database setup within app context
-with app.app_context():
-    initialize_database()
-
 if __name__ == '__main__':
+    with app.app_context():
+        initialize_database()
     from app.extensions import socketio
     socketio.run(app, debug=True, port=5000, allow_unsafe_werkzeug=True)

@@ -96,8 +96,11 @@ def create_app(config_name=None):
         # If missing on disk, return default placeholder with HTTP 200
         return send_from_directory(os.path.join(app.root_path, 'static', 'images'), 'product-placeholder.svg')
 
-    # Create database tables
-    with app.app_context():
-        db.create_all()
+    # Create database tables safely
+    try:
+        with app.app_context():
+            db.create_all()
+    except Exception as e:
+        app.logger.warning(f"Notice during initial db.create_all(): {e}")
 
     return app
